@@ -1,60 +1,66 @@
+"""Snake, classic arcade game.
+
+Excercises
+
+1. How do you make the snake faster or slower?
+2. How can you make the snake go around the edges?
+3. How would you move the food?
+4. Change the snake to respond to arrow keys.
+
 """
-Number Names -
-Show how to spell out a number in English.You can use a preexisting implementation or roll your own, 
-but you should support inputs up to at least one million 
-(or the maximum value of your language's default bounded integer type, if that's less). 
 
-Optional: Support for inputs other than positive integers (like zero, negative integers, 
-            and floating-point numbers).
-"""
-import num2words as n2w
-from tkinter import *
+from turtle import *
+from random import randrange
+from freegames import square, vector
 
-def num_to_words():
-    given_num = float(num.get())
-    num_in_word = n2w.num2words(given_num)
-    display.config(text=str(num_in_word).capitalize())
+food = vector(0, 0)
+snake = [vector(10, 0)]
+aim = vector(0, -10)
 
-root = Tk()
-root.title("Numbers to Words")
-root.geometry("650x400")
+def change(x, y):
+    "Change snake direction."
+    aim.x = x
+    aim.y = y
 
-num = StringVar()
+def inside(head):
+    "Return True if head inside boundaries."
+    return -200 < head.x < 190 and -200 < head.y < 190
 
-# Adding title
-title = Label(root, text="Number to Words converter",
-               fg="Blue", font=("Arial", 20, 'bold')).place(x=220, y=10)
+def move():
+    "Move snake forward one segment."
+    head = snake[-1].copy()
+    head.move(aim)
 
-# Options
-formats_lable = Label(root, text="Formats supported :  ",
-               fg="green", font=("Arial", 10, 'bold')).place(x=100, y=70)
-pos_format_lable = Label(root, text="1. Positives :  ",
-               fg="green", font=("Arial", 10, 'bold')).place(x=200, y=90)
-neg_format_lable = Label(root, text="2. Negatives ",
-               fg="green", font=("Arial", 10, 'bold')).place(x=200, y=110)
-float_format_lable = Label(root, text="3. Zeros  ",
-               fg="green", font=("Arial", 10, 'bold')).place(x=200, y=130)
-zero_format_lable = Label(root, text="4. Floating points/decimals/fractions  ",
-               fg="green", font=("Arial", 10, 'bold')).place(x=200, y=150)
+    if not inside(head) or head in snake:
+        square(head.x, head.y, 9, 'red')
+        update()
+        return
 
+    snake.append(head)
 
-num_entry_lable = Label(root, text="Enter a number :",
-               fg="Blue", font=("Arial", 15, 'bold')).place(x=50, y=200)
-num_entry = Entry(root,textvariable=num,width=30).place(x=220, y=200)
+    if head == food:
+        print('Snake:', len(snake))
+        food.x = randrange(-15, 15) * 10
+        food.y = randrange(-15, 15) * 10
+    else:
+        snake.pop(0)
 
+    clear()
 
+    for body in snake:
+        square(body.x, body.y, 9, 'black')
 
-btn = Button(master=root, text="calculate",fg="green", font=("Arial", 10, 'bold')
-             ,command=num_to_words).place(x=280,y=230)
+    square(food.x, food.y, 9, 'green')
+    update()
+    ontimer(move, 100)
 
-
-
-display = Label(root, text="",fg="black", font=("Arial", 10, 'bold'))
-display.place(x=10, y=300)
-
-
-
-photo = PhotoImage(file = "Num2Words/number.png")
-root.iconphoto(False, photo)
-
-root.mainloop()
+setup(420, 420, 370, 0)
+hideturtle()
+tracer(False)
+listen()
+onkey(lambda: change(10, 0), 'Right')
+onkey(lambda: change(-10, 0), 'Left')
+onkey(lambda: change(0, 10), 'Up')
+onkey(lambda: change(0, -10), 'Down')
+move()
+done()
